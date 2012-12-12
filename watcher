@@ -5,10 +5,22 @@ require "bundler/setup"
 
 require ::File.expand_path('../lib/watcher', __FILE__)
 
-::SMS.login('main@anlas.ru', 'QsZXVWS')
+begin
+  ::SMS.login('main@anlas.ru', 'QsZXVWS')
+rescue ::SocketError
+rescue => e
+  puts "[SMS login error] #{e.message}"
+end
 
 at_exit {
-  ::SMS::logout
+
+  begin
+    ::SMS::logout
+  rescue ::SocketError
+  rescue => e
+    puts "[SMS logout error] #{e.message}"
+  end
+
 }
 
 ::Watcher.run

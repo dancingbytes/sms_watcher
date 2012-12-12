@@ -27,7 +27,7 @@ module Watcher
       return if ::File.exist?(flock)
 
       # Иначе, создаем файл
-      f = ::File.new(flock, ::File::RDWR|::File::CREAT, 0400)
+      ::File.new(flock, ::File::RDWR|::File::CREAT, 0400)
 
       # Выполняем блок
       begin
@@ -135,7 +135,14 @@ module Watcher
   def send_message(phones, str)
 
     phones.each do |phone|
-      ::SMS.message(phone, str)
+
+      begin
+        ::SMS.message(phone, str)
+      rescue ::SocketError
+      rescue => e
+        puts "[SMS message error] #{e.message}"
+      end
+
     end # each
 
   end # send_message
@@ -208,9 +215,14 @@ module Watcher
 
       }
 
-    rescue
+    rescue ::SocketError
+    rescue => e
+
+      puts "#{e.message}\n"
+      puts "#{e.backtrace.join('\n')}"
       # Возникла какая-то ошибка
       yield(false, 1)
+
     ensure
       # Закрываем все файловые дескрипторы
       stdin.close  if stdin && !stdin.closed?
@@ -238,9 +250,14 @@ module Watcher
 
       }
 
-    rescue
+    rescue ::SocketError
+    rescue => e
+
+      puts "#{e.message}\n"
+      puts "#{e.backtrace.join('\n')}"
       # Возникла какая-то ошибка
       yield(false, 0)
+
     end
 
   end # check_domain
