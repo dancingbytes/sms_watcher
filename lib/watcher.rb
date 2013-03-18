@@ -23,7 +23,10 @@ module Watcher
       flock = ::File.join(::Watcher::TMP_DIR, ".watcher.lock")
 
       # Если файл блокировки уже есть - завершаем работу.
-      return if locked?(flock)
+      if locked?(flock)
+        puts "[LOCK] Lock file found: `#{flock}`."
+        return
+      end
 
       # Иначе, создаем файл
       create_lock(".watcher.lock", "watcher")
