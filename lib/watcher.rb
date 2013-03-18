@@ -23,18 +23,17 @@ module Watcher
       flock = ::File.join(::Watcher::TMP_DIR, ".watcher.lock")
 
       # Если файл блокировки уже есть - завершаем работу.
-      return if ::File.exist?(flock)
+      return if locked?(flock)
 
       # Иначе, создаем файл
-      ::File.new(flock, ::File::RDWR|::File::CREAT, 0400)
+      create_lock(".watcher.lock", "watcher")
 
       # Выполняем блок
       begin
         check_all
       ensure
         # Все зависмости от того, как выполнился блок, удаляем файл блокировки,
-        # если он еще существует
-        ::File.unlink(flock) if ::File.exist?(flock)
+        remove_lock(flock)
       end
 
     # Если поймана ошибка доступа -- игнорируем её.
@@ -125,7 +124,7 @@ module Watcher
   def create_lock(file, site)
 
     ::File.open(file, "w") { |f|
-      f.write("#{site} - #{::Time.now}")
+      f.write("#{site} - #{::Time.now.strftime('%H:%M, %d/%m/%Y')}")
     }
 
   end # create_lock
@@ -150,8 +149,9 @@ module Watcher
 
     # Если файла блокировки не существут -- false
     return false unless ::File.exists?(lock)
+
     # Если файла блокировки имеется и не устарел -- успех
-    return true  if (::Time.now - ::File.atime(lock)) < ::Watcher::LOCKLIFE
+    return true  if (::Time.now.to_i - ::File.atime(lock).to_i) < ::Watcher::LOCKLIFE
 
     # Иначе удаляекм файл блокировки -- false
     ::File.unlink(lock)
