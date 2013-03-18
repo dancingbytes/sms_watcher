@@ -7,18 +7,20 @@ require ::File.expand_path('../lib/watcher', __FILE__)
 
 begin
   ::SMS.login('main@anlas.ru', 'QsZXVWS')
-rescue ::SocketError
+rescue ::SocketError => e
+  puts "[Socket] #{e}"
 rescue => e
-  puts "[SMS login error] #{e.message}"
+  puts "[SMS] #{e.message}"
 end
 
 at_exit {
 
   begin
     ::SMS::logout
-  rescue ::SocketError
+  rescue ::SocketError => e
+    puts "[Socket] #{e}"
   rescue => e
-    puts "[SMS logout error] #{e.message}"
+    puts "[SMS] #{e.message}"
   end
 
 }
