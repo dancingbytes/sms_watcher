@@ -29,7 +29,7 @@ module Watcher
       end
 
       # Иначе, создаем файл
-      create_lock(".watcher.lock", "watcher")
+      create_lock(flock, "watcher")
 
       # Выполняем блок
       begin
